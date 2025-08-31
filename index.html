@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sports TV</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0d1117;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+    }
+    header {
+      width: 100%;
+      padding: 15px;
+      background: #161b22;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #58a6ff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+    #player-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+    video {
+      width: 90%;
+      max-width: 1000px;
+      border-radius: 12px;
+      background: #000;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+    }
+    #channels {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      background: #161b22;
+      padding: 10px;
+      width: 100%;
+      overflow-x: auto;
+    }
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      background: #21262d;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn:hover {
+      background: #30363d;
+    }
+    .btn.active {
+      background: #58a6ff;
+      color: #000;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header>⚽ Zobi  Tech Sports TV</header>
+
+  <div id="player-container">
+    <video id="video" controls autoplay></video>
+  </div>
+
+  <div id="channels">
+    <button class="btn active" onclick="playChannel(0)">🏏 Willow</button>
+    <button class="btn" onclick="playChannel(1)">🏀 ESPN</button>
+    <button class="btn" onclick="playChannel(2)">🏏 Sky Sports Cricket</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+    const video = document.getElementById('video');
+
+    // Your channels
+    const channels = [
+      {
+        name: "Willow TV",
+        url: "https://d6.merichunidya.com:1686/hls/willowusa.m3u8?md5=j2UHBmZgRcRtgYSPKsvcsw&expires=1756673779"
+      },
+      {
+        name: "ESPN",
+        url: "https://d1.merichunidya.com:1686/hls/bbtespn.m3u8?md5=O12bgeJmpZu2YTlOpIj7EQ&expires=1756669058"
+      },
+      {
+        name: "Sky Sports Cricket",
+        url: "https://d5.merichunidya.com:1686/hls/skyscric.m3u8?md5=kkzyuvckdCsbMdPDEzdxvA&expires=1756673673"
+      }
+    ];
+
+    let hls;
+
+    function playChannel(index) {
+      const selected = channels[index];
+      if (hls) {
+        hls.destroy();
+      }
+      if (Hls.isSupported()) {
+        hls = new Hls();
+        hls.loadSource(selected.url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          video.play();
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = selected.url;
+        video.addEventListener('loadedmetadata', () => video.play());
+      }
+
+      // Update active button
+      document.querySelectorAll('.btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+    }
+
+    // Auto-start first channel
+    playChannel(0);
+  </script>
+</body>
+</html>
