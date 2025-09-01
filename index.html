@@ -31,6 +31,7 @@
       border-radius: 12px;
       padding: 10px;
       transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
     }
     .rsz17:hover {
       transform: scale(1.07);
@@ -52,132 +53,95 @@
       text-decoration: none;
       color: inherit;
     }
+    #player-container {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      z-index: 1000;
+    }
+    #player-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
   </style>
 </head>
 <body>
   <header>📺 Sports TV by ZOBI TECH</header>
-  <main id="app1">
-
-    <!-- Channel List -->
-    <div align="center" class="rsz17">
-      <a href="https://tvgo.neocities.org/APPTV/crichd?id=starhindi" target="_self">
-        <img src="https://wapka-img.zuna.id/7145dac7.png">
-        <p>STAR SPORTS 1 HINDI</p>
-      </a>
-    </div>
-
-    <div align="center" class="rsz17">
-      <a href="https://tvgo.neocities.org/APPTV/crichd?id=stars1" target="_self">
-        <img src="https://i.postimg.cc/Yqfq2t5m/Star-Sports-1.png">
-        <p>STAR SPORTS 1</p>
-      </a>
-    </div>
-
-    <div align="center" class="rsz17">
-      <a href="https://tvgo.neocities.org/APPTV/crichd?id=stars2" target="_self">
-        <img src="https://i.postimg.cc/mDC1mL8j/Star-Sports-2.png">
-        <p>STAR SPORTS 2</p>
-      </a>
-    </div>
-
-    <div align="center" class="rsz17">
-      <a href="https://tvgo.neocities.org/APPTV/crichd?id=stars1hd" target="_self">
-        <img src="https://i.postimg.cc/jSG2rKyf/Star-Sports-Select-1.png">
-        <p>STAR SPORTS SELECT 1</p>
-      </a>
-    </div>
-
-    <div align="center" class="rsz17">
-      <a href="https://tvgo.neocities.org/APPTV/crichd?id=stars2hd" target="_self">
-        <img src="https://i.postimg.cc/8cMyG8tq/Star-Sports-Select-2.png">
-        <p>STAR SPORTS SELECT 2</p>
-      </a>
-    </div>
-
-    <div align="center" class="rsz17">
-      <a href="https://tvgo.neocities.org/APPTV/crichd?id=sonysix" target="_self">
-        <img src="https://i.postimg.cc/qqhMLW8y/Sony-Six.png">
-        <p>SONY SIX</p>
-      </a>
-    </div>
-
-    <div align="center" class="rsz17">
-      <a href="https://tvgo.neocities.org/APPTV/crichd?id=sonytv" target="_self">
-        <img src="https://i.postimg.cc/5ycs92sF/Sony-Ten-1.png">
-        <p>SONY TEN 1</p>
-      </a>
-    </div>
-
-    <div align="center" class="rsz17">
-      <a href="https://tvgo.neocities.org/APPTV/crichd?id=sonytwo" target="_self">
-        <img src="https://i.postimg.cc/KjKhRjrK/Sony-Ten-2.png">
-        <p>SONY TEN 2</p>
-      </a>
-    </div>
-
-    <div align="center" class="rsz17">
-      <a href="https://tvgo.neocities.org/APPTV/crichd?id=sonythree" target="_self">
-        <img src="https://i.postimg.cc/VNxC5rBM/Sony-Ten-3.png">
-        <p>SONY TEN 3</p>
-      </a>
-    </div>
-
-    <div align="center" class="rsz17">
-      <a href="https://tvgo.neocities.org/APPTV/crichd?id=sports18" target="_self">
-        <img src="https://i.postimg.cc/VkSzD9g5/Sports-18.png">
-        <p>SPORTS 18</p>
-      </a>
-    </div>
-
-    <div align="center" class="rsz17">
-      <a href="https://tvgo.neocities.org/APPTV/crichd?id=ptvsports" target="_self">
-        <img src="https://i.postimg.cc/Y0tkYvP2/PTV-Sports.png">
-        <p>PTV SPORTS</p>
-      </a>
-    </div>
-
-    <div align="center" class="rsz17">
-      <a href="https://tvgo.neocities.org/APPTV/crichd?id=geosuper" target="_self">
-        <img src="https://i.postimg.cc/vZtx7PHs/Geo-Super.png">
-        <p>GEO SUPER</p>
-      </a>
-    </div>
-
-    <div align="center" class="rsz17">
-      <a href="https://tvgo.neocities.org/APPTV/crichd?id=willow" target="_self">
-        <img src="https://i.postimg.cc/g2TR3drj/Willow-TV.png">
-        <p>WILLOW CRICKET</p>
-      </a>
-    </div>
-
-    <div align="center" class="rsz17">
-      <a href="https://tvgo.neocities.org/APPTV/crichd?id=skysportscricket" target="_self">
-        <img src="https://i.postimg.cc/gJN3mPWq/Sky-Sports-Cricket.png">
-        <p>SKY SPORTS CRICKET</p>
-      </a>
-    </div>
-
-    <div align="center" class="rsz17">
-      <a href="https://tvgo.neocities.org/APPTV/crichd?id=skysportsmix" target="_self">
-        <img src="https://i.postimg.cc/R0j4rnCn/Sky-Sports-Mix.png">
-        <p>SKY SPORTS MIX</p>
-      </a>
-    </div>
-
+  <main id="channel-list">
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="STAR SPORTS 1 HINDI" data-url="https://tvgo.neocities.org/APPTV/crichd?id=starhindi"><img src="https://wapka-img.zuna.id/7145dac7.png"><p>STAR SPORTS 1 HINDI</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="STAR SPORTS 1" data-url="https://tvgo.neocities.org/APPTV/crichd?id=star1in"><img src="https://wapka-img.zuna.id/858ef840.jpeg"><p>STAR SPORTS 1</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="FOX SPORTS 501" data-url="https://tvgo.neocities.org/APPTV/crichd?id=fox501"><img src="https://wapka-img.zuna.id/039194ba.png"><p>FOX SPORTS 501</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="Astro Cricket" data-url="https://tvgo.neocities.org/APPTV/crichd?id=fox501"><img src="https://raw.githubusercontent.com/abusaeeidx/Tv-Channel-Logo/heads/main/CricHD/runded/1745008895589.png"><p>Astro Cricket</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="SKY SPORTS CRICKET" data-url="https://tvgo.neocities.org/APPTV/crichd?id=skyscric"><img src="https://wapka-img.zuna.id/3d2ae3b3.jpeg"><p>SKY SPORTS CRICKET</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="SKY SPORTS MIX HD" data-url="https://tvgo.neocities.org/APPTV/crichd?id=skysmixx"><img src="https://wapka-img.zuna.id/645ab7de.jpeg"><p>SKY SPORTS MIX HD</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="SKY SPORTS MAIN EVENT" data-url="https://tvgo.neocities.org/APPTV/crichd?id=skysme"><img src="https://wapka-img.zuna.id/abb61b95.png"><p>SKY SPORTS MAIN EVENT</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="WILLOW XTRA" data-url="https://tvgo.neocities.org/APPTV/crichd?id=willowextra"><img src="https://wapka-img.zuna.id/14008eb9.jpeg"><p>WILLOW XTRA</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="WILLOW TV" data-url="https://tvgo.neocities.org/APPTV/crichd?id=willowusa"><img src="https://wapka-img.zuna.id/29308878.jpeg"><p>WILLOW TV</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="PTV SPORTS" data-url="https://tvgo.neocities.org/APPTV/crichd?id=ptvpk"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4sao4QMrW4QCorCZq1Su0lV-C8jN7IXwJbCAt7VfwFIFUajCdlvq5aQJj&s=10"><p>PTV SPORTS</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="A SPORTS" data-url="https://tvgo.neocities.org/APPTV/crichd?id=asportshd"><img src="https://wapka-img.zuna.id/e3d690f1.png"><p>A SPORTS</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="TEN SPORTS" data-url="https://tvgo.neocities.org/APPTV/crichd?id=tenspk"><img src="https://wapka-img.zuna.id/da49b044.jpeg"><p>TEN SPORTS</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="TNT SPORTS 1" data-url="https://tvgo.neocities.org/APPTV/crichd?id=bbtsp1"><img src="https://wapka-img.zuna.id/29919308.jpeg"><p>TNT SPORTS 1</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="TNT SPORTS 2" data-url="https://tvgo.neocities.org/APPTV/crichd?id=bbtsp2"><img src="https://wapka-img.zuna.id/e090fdfd.jpeg"><p>TNT SPORTS 2</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="TNT SPORTS 3" data-url="https://tvgo.neocities.org/APPTV/crichd?id=bbtsp3"><img src="https://wapka-img.zuna.id/7db078ad.jpeg"><p>TNT SPORTS 3</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="TNT SPORTS 4" data-url="https://tvgo.neocities.org/APPTV/crichd?id=bbtespn"><img src="https://wapka-img.zuna.id/50f65682.jpeg"><p>TNT SPORTS 4</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="SONY TEN 3" data-url="https://tvgo.neocities.org/APPTV/crichd?id=ten1hd"><img src="https://wapka-img.zuna.id/fc9331aa.jpeg"><p>SONY TEN 3</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="SKY SPORTS 1 NZ" data-url="https://tvgo.neocities.org/APPTV/crichd?id=sky1nz"><img src="https://wapka-img.zuna.id/5a6a67b0.png"><p>SKY SPORTS 1 NZ</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="SKY SPORTS 2 NZ" data-url="https://tvgo.neocities.org/APPTV/crichd?id=sky2nz"><img src="https://wapka-img.zuna.id/ed6e2877.png"><p>SKY SPORTS 2 NZ</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="SKY SPORTS 3" data-url="https://tvgo.neocities.org/APPTV/crichd?id=sky3nz"><img src="https://wapka-img.zuna.id/3d2c7083.png"><p>SKY SPORTS 3</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="SKY SPORTS 4 NZ" data-url="https://tvgo.neocities.org/APPTV/crichd?id=sky4nz"><img src="https://wapka-img.zuna.id/ac2dc157.png"><p>SKY SPORTS 4 NZ</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="SKY SPORTS 5" data-url="https://tvgo.neocities.org/APPTV/crichd?id=sky5nz"><img src="https://wapka-img.zuna.id/29390920.png"><p>SKY SPORTS 5</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="SKY SPORTS 6 NZ" data-url="https://tvgo.neocities.org/APPTV/crichd?id=sky6nz"><img src="https://wapka-img.zuna.id/d2fdcb0a.png"><p>SKY SPORTS 6 NZ</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="SKY SPORTS 7 NZ" data-url="https://tvgo.neocities.org/APPTV/crichd?id=sky7nz"><img src="https://wapka-img.zuna.id/e50ab3b4.png"><p>SKY SPORTS 7 NZ</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="SKY SPORTS 8 NZ" data-url="https://tvgo.neocities.org/APPTV/crichd?id=sky8nz"><img src="https://wapka-img.zuna.id/318d1269.jpeg"><p>SKY SPORTS 8 NZ</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="SKY SPORTS 9 NZ" data-url="https://tvgo.neocities.org/APPTV/crichd?id=sky9nz"><img src="https://wapka-img.zuna.id/63bc7c7f.png"><p>SKY SPORTS 9 NZ</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="Super Sports Football" data-url="https://tvgo.neocities.org/APPTV/crichd?id=superfotball"><img src="https://wapka-img.zuna.id/d319bfda.png"><p>Super Sports Football</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="Super Sports Premier League" data-url="https://tvgo.neocities.org/APPTV/crichd?id=superpremier"><img src="https://wapka-img.zuna.id/bddda31d.png"><p>Super Sports Premier League</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="Super Sports La Liga" data-url="https://tvgo.neocities.org/APPTV/crichd?id=superlaliga"><img src="https://wapka-img.zuna.id/1944ba95.jpeg"><p>Super Sports La Liga</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="Super Sports Maximo 1" data-url="https://tvgo.neocities.org/APPTV/crichd?id=supermeximo"><img src="https://wapka-img.zuna.id/c51694be.jpeg"><p>Super Sports Maximo 1</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="Viaplay Sports 2" data-url="https://tvgo.neocities.org/APPTV/crichd?id=hdchnl2"><img src="https://wapka-img.zuna.id/7e9f9030.png"><p>Viaplay Sports 2</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="La Liga" data-url="https://tvgo.neocities.org/APPTV/crichd?id=laligauk"><img src="https://wapka-img.zuna.id/6ca25c6c.png"><p>La Liga</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="Sky Sports Darts" data-url="https://tvgo.neocities.org/APPTV/crichd?id=skysare"><img src="https://wapka-img.zuna.id/f76bb32a.jpeg"><p>Sky Sports Darts</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="Sky Sports Premier League" data-url="https://tvgo.neocities.org/APPTV/crichd?id=skysprem"><img src="https://wapka-img.zuna.id/ed50532c.jpeg"><p>Sky Sports Premier League</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="Sky Sports NFL" data-url="https://tvgo.neocities.org/APPTV/crichd?id=skysact"><img src="https://wapka-img.zuna.id/9ae8c614.jpeg"><p>Sky Sports NFL</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="Sky Sports Football" data-url="https://tvgo.neocities.org/APPTV/crichd?id=skysfott"><img src="https://wapka-img.zuna.id/016f9513.jpeg"><p>Sky Sports Football</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="Sky Sports Golf" data-url="https://tvgo.neocities.org/APPTV/crichd?id=skysgol"><img src="https://wapka-img.zuna.id/cd97d76d.jpeg"><p>Sky Sports Golf</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="EuroSports 2" data-url="https://tvgo.neocities.org/APPTV/crichd?id=espn2"><img src="https://wapka-img.zuna.id/359e1e62.png"><p>EuroSports 2</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="EuroSports 1" data-url="https://tvgo.neocities.org/APPTV/crichd?id=espnusa"><img src="https://wapka-img.zuna.id/3216abad.jpeg"><p>EuroSports 1</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="Sky Sports Tennis" data-url="https://tvgo.neocities.org/APPTV/crichd?id=skystennis"><img src="https://raw.githubusercontent.com/abusaeeidx/Tv-Channel-Logo/heads/main/CricHD/runded/1745009085794.png"><p>Sky Sports Tennis</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="Premier Sports 1" data-url="https://tvgo.neocities.org/APPTV/crichd?id=premieruk"><img src="https://raw.githubusercontent.com/abusaeeidx/Tv-Channel-Logo/heads/main/CricHD/runded/31-by-xfireflix.png"><p>Premier Sports 1</p></div>
+    <div align="center" class="rsz17" data-group="CRICHD" data-name="Sky Sports F1" data-url="https://tvgo.neocities.org/APPTV/crichd?id=skysfor1"><img src="https://raw.githubusercontent.com/abusaeeidx/Tv-Channel-Logo/heads/main/CricHD/runded/1745008468637.png"><p>Sky Sports F1</p></div>
   </main>
-
+  <div id="player-container">
+    <iframe id="player-iframe" sandbox="allow-scripts allow-same-origin"></iframe>
+  </div>
   <script>
-    // Block popups
+    document.querySelectorAll('.rsz17').forEach(function(channel) {
+      channel.addEventListener('click', function() {
+        var url = this.getAttribute('data-url');
+        document.getElementById('channel-list').style.display = 'none';
+        document.getElementById('player-container').style.display = 'block';
+        var iframe = document.getElementById('player-iframe');
+        iframe.src = url;
+        iframe.onload = function() {
+          try {
+            var video = iframe.contentDocument.querySelector('video');
+            if (video) {
+              video.play();
+              video.muted = false;
+            }
+          } catch (e) {
+            console.log('Could not access video due to cross-origin restrictions.');
+          }
+        };
+      });
+    });
     window.open = function() { return null; };
-
-    // Force all links to stay inside same page (no external browser, no redirect)
-    document.addEventListener("click", function(e) {
-      if (e.target.closest("a")) {
-        e.preventDefault();
-        const url = e.target.closest("a").href;
-        window.location.href = url;
-      }
-    }, true);
+    window.alert = function() {};
   </script>
 </body>
 </html>
