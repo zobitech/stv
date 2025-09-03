@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HLS Video Player with Channel Selector</title>
+    <title>HLS Video Player</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -81,21 +80,9 @@
             border: none;
             padding: 5px;
         }
-        #channel-selector {
-            width: 80%;
-            max-width: 800px;
-            margin-bottom: 20px;
-            padding: 10px;
-            font-size: 16px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
     </style>
 </head>
 <body>
-    <select id="channel-selector">
-        <option value="">Select a channel</option>
-    </select>
     <div id="player">
         <video id="video" controls autoplay></video>
         <div class="custom-controls">
@@ -130,61 +117,23 @@
         const durationEl = document.getElementById('duration');
         const speedSelect = document.getElementById('speed');
         const fullscreenBtn = document.getElementById('fullscreen');
-        const channelSelector = document.getElementById('channel-selector');
 
-        const apiUrl = 'https://raw.githubusercontent.com/abusaeeidx/CricHd-playlists-Auto-Update-permanent/refs/heads/main/api.json';
-
-        let hls = null;
-
-        // Fetch channels from API
-        async function fetchChannels() {
-            try {
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-                // Assuming the JSON structure is an array of objects with 'name' and 'url'
-                // Adjust based on actual structure if needed, e.g., data.channels or similar
-                const channels = Array.isArray(data) ? data : data.channels || [];
-                channels.forEach(channel => {
-                    const option = document.createElement('option');
-                    option.value = channel.url; // Assuming 'url' key
-                    option.textContent = channel.name; // Assuming 'name' key
-                    channelSelector.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error fetching channels:', error);
-                alert('Failed to load channels. Please try again later.');
-            }
-        }
+        const hlsUrl = 'https://d6.merichunidya.com:1686/hls/star1in.m3u8?md5=_1KL0G5jkTJG_i0hrHNPvg&expires=1756929226';
 
         // Load HLS stream
-        function loadStream(url) {
-            if (hls) {
-                hls.destroy();
-                hls = null;
-            }
-
-            if (Hls.isSupported()) {
-                hls = new Hls();
-                hls.loadSource(url);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play();
-                });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = url;
-                video.addEventListener('loadedmetadata', function() {
-                    video.play();
-                });
-            }
+        if (Hls.isSupported()) {
+            const hls = new Hls();
+            hls.loadSource(hlsUrl);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                video.play();
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = hlsUrl;
+            video.addEventListener('loadedmetadata', function() {
+                video.play();
+            });
         }
-
-        // Channel selection
-        channelSelector.addEventListener('change', (e) => {
-            const url = e.target.value;
-            if (url) {
-                loadStream(url);
-            }
-        });
 
         // Play/Pause
         playPauseBtn.addEventListener('click', () => {
@@ -206,7 +155,7 @@
         // Volume control
         volumeSlider.addEventListener('input', () => {
             video.volume = volumeSlider.value;
-            video.muted = (volumeSlider.value == 0);
+            video.muted = (volumeSlider.value === 0);
             muteBtn.textContent = video.muted ? '🔇' : '🔊';
         });
 
@@ -246,8 +195,7 @@
             return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
 
-        // Initialize
-        fetchChannels();
+        // Sync native controls visibility (optional, since we have custom)
         video.controls = false; // Hide native controls to use custom ones
     </script>
 </body>
