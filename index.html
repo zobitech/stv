@@ -3,56 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Custom Player</title>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <title>HLS Video Player with Channel Selector</title>
   <style>
-    body,html { margin:0; padding:0; height:100%; background:#000; display:flex; align-items:center; justify-content:center; }
-    #player { width:100%; max-width:900px; background:#000; }
-    video { width:100%; height:auto; background:black; }
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+    #channel-selector {
+      width: 80%;
+      max-width: 800px;
+      margin-bottom: 20px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    #player-iframe {
+      width: 80%;
+      max-width: 800px;
+      height: 450px;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
   </style>
 </head>
 <body>
-  <div id="player">
-    <video id="video" controls autoplay muted></video>
-  </div>
+  <select id="channel-selector">
+    <option value="">Select a channel</option>
+  </select>
+  <iframe id="player-iframe" src="player.html" allowfullscreen></iframe>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get("id");
-    const apiUrl = "https://raw.githubusercontent.com/abusaeeidx/CricHd-playlists-Auto-Update-permanent/main/api.json";
+    const channelSelector = document.getElementById('channel-selector');
+    const playerIframe = document.getElementById('player-iframe');
+    const apiUrl = 'https://raw.githubusercontent.com/abusaeeidx/CricHd-playlists-Auto-Update-permanent/main/api.json';
 
-    if (!id) {
-      document.body.innerHTML = "<h2 style='color:white;text-align:center;'>❌ No channel ID provided</h2>";
-    } else {
-      fetch(apiUrl)
-        .then(r => r.json())
-        .then(data => {
-          const channel = data.find(c => c.id === id);
-          if (!channel) {
-            document.body.innerHTML = "<h2 style='color:white;text-align:center;'>❌ Channel not found</h2>";
-            return;
-          }
-          loadStream(channel.link);
-        })
-        .catch(err => {
-          document.body.innerHTML = `<h2 style='color:white;text-align:center;'>⚠️ Error: ${err.message}</h2>`;
+    // Fetch channels from API
+    async function fetchChannels() {
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        const channels = Array.isArray(data) ? data : [];
+
+        channels.forEach(channel => {
+          const option = document.createElement('option');
+          option.value = channel.link;
+          option.textContent = channel.name;
+          channelSelector.appendChild(option);
         });
-    }
-
-    function loadStream(url) {
-      const video = document.getElementById("video");
-      if (Hls.isSupported()) {
-        const hls = new Hls();
-        hls.loadSource(url);
-        hls.attachMedia(video);
-        video.play();
-      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        video.src = url;
-        video.play();
-      } else {
-        alert("HLS not supported in this browser.");
+      } catch (error) {
+        console.error('Error fetching channels:', error);
+        alert('Failed to load channels. Please try again later.');
       }
     }
+
+    // Send selected channel URL to iframe
+    channelSelector.addEventListener('change', (e) => {
+      const url = e.target.value;
+      if (url) {
+        playerIframe.contentWindow.postMessage({ type: 'loadStream', url }, '*');
+      }
+    });
+
+    // Initialize
+    fetchChannels();
   </script>
 </body>
 </html>
