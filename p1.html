@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Channel Player</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+  <video id="video" controls autoplay></video>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const streamUrl = urlParams.get("url");
+
+    if (!streamUrl) {
+      document.body.innerHTML = "<h2 style='color:white;text-align:center;'>No stream URL</h2>";
+    } else {
+      const video = document.getElementById("video");
+      const proxiedUrl = "/api/proxy?url=" + encodeURIComponent(streamUrl);
+
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(proxiedUrl);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          video.play();
+        });
+      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = proxiedUrl;
+        video.addEventListener("loadedmetadata", () => {
+          video.play();
+        });
+      } else {
+        document.body.innerHTML = "<h2 style='color:white;text-align:center;'>HLS not supported</h2>";
+      }
+    }
+  </script>
+</body>
+</html>
