@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HLS Video Player with Channel Selector</title>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <title>Video Player with Channel Selector</title>
   <style>
     body {
       margin: 0;
@@ -20,69 +19,18 @@
     #player {
       width: 80%;
       max-width: 800px;
-      background-color: #fff;
+      background-color: #000;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       overflow: hidden;
       position: relative;
     }
-    #video {
+    video {
       width: 100%;
-      height: auto;
+      height: 450px;
+      border: none;
       background: black;
-      object-fit: contain;
-    }
-    .custom-controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-      background-color: #333;
-      color: #fff;
-    }
-    .custom-controls button {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 18px;
-      cursor: pointer;
-      padding: 5px 10px;
-    }
-    .custom-controls button:hover {
-      color: #ccc;
-    }
-    .progress-container {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      margin: 0 10px;
-    }
-    #progress {
-      width: 100%;
-      height: 5px;
-      background-color: #555;
-      cursor: pointer;
-      position: relative;
-    }
-    #progress-bar {
-      height: 100%;
-      background-color: #ff0000;
-      width: 0;
-    }
-    .time {
-      font-size: 14px;
-      margin: 0 10px;
-    }
-    #volume {
-      width: 100px;
-      margin-left: 10px;
-    }
-    #speed {
-      margin-left: 10px;
-      background-color: #444;
-      color: #fff;
-      border: none;
-      padding: 5px;
+      outline: none;
     }
     #channel-selector {
       width: 80%;
@@ -95,14 +43,14 @@
       background-color: #fff;
     }
     #error-message {
-      color: white;
+      color: red;
       text-align: center;
       font-size: 18px;
       margin-top: 20px;
     }
     #play-landscape-btn {
       position: absolute;
-      bottom: 60px;
+      bottom: 20px;
       right: 20px;
       background: #00e6ff;
       color: #000;
@@ -127,115 +75,65 @@
     <option value="">Select a channel</option>
   </select>
   <div id="player">
-    <video id="video"></video>
+    <video id="video-player" controls autoplay playsinline></video>
     <button id="play-landscape-btn" onclick="playLandscape()">▶</button>
-    <div class="custom-controls">
-      <button id="play-pause">▶️</button>
-      <span class="time" id="current-time">00:00</span>
-      <div class="progress-container">
-        <div id="progress">
-          <div id="progress-bar"></div>
-        </div>
-      </div>
-      <span class="time" id="duration">00:00</span>
-      <button id="mute">🔊</button>
-      <input type="range" id="volume" min="0" max="1" step="0.01" value="1">
-      <select id="speed">
-        <option value="0.5">0.5x</option>
-        <option value="1" selected>1x</option>
-        <option value="1.5">1.5x</option>
-        <option value="2">2x</option>
-      </select>
-      <button id="fullscreen">⛶</button>
-    </div>
   </div>
   <div id="error-message"></div>
 
+  <!-- hls.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script>
-    const video = document.getElementById('video');
-    const playPauseBtn = document.getElementById('play-pause');
-    const muteBtn = document.getElementById('mute');
-    const volumeSlider = document.getElementById('volume');
-    const progress = document.getElementById('progress');
-    const progressBar = document.getElementById('progress-bar');
-    const currentTimeEl = document.getElementById('current-time');
-    const durationEl = document.getElementById('duration');
-    const speedSelect = document.getElementById('speed');
-    const fullscreenBtn = document.getElementById('fullscreen');
-    const playLandscapeBtn = document.getElementById('play-landscape-btn');
+    const videoPlayer = document.getElementById('video-player');
     const channelSelector = document.getElementById('channel-selector');
     const errorMessage = document.getElementById('error-message');
+    const playLandscapeBtn = document.getElementById('play-landscape-btn');
     const apiUrl = 'https://raw.githubusercontent.com/abusaeeidx/CricHd-playlists-Auto-Update-permanent/main/api.json';
-    const proxyUrl = 'https://cors-anywhere.herokuapp.com/'; // Public CORS proxy for testing
 
-    let hls = null;
+    let hls;
 
-    // Load HLS stream with proxy and referer
-    function loadStream(url, referer) {
+    function loadStream(url) {
       if (hls) {
         hls.destroy();
-        hls = null;
       }
-      video.src = '';
-      const proxiedUrl = proxyUrl + url; // Prepend proxy URL
+
       if (Hls.isSupported()) {
-        hls = new Hls({
-          xhrSetup: function(xhr) {
-            xhr.setRequestHeader('Referer', referer);
-          }
+        hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(videoPlayer);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          videoPlayer.play();
         });
-        hls.loadSource(proxiedUrl);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, function () {
-          video.muted = true;
-          video.play().catch(() => {
-            errorMessage.textContent = 'Auto-play blocked. Click play to start.';
-          });
-          playPauseBtn.textContent = '⏸️';
-          playLandscapeBtn.style.display = 'flex';
-        });
-        hls.on(Hls.Events.ERROR, function (event, data) {
-          if (data.fatal) {
-            errorMessage.textContent = 'Error loading stream. Try another channel or check proxy.';
-          }
-        });
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = proxiedUrl;
-        video.addEventListener('loadedmetadata', function () {
-          video.muted = true;
-          video.play().catch(() => {
-            errorMessage.textContent = 'Auto-play blocked. Click play to start.';
-          });
-          playPauseBtn.textContent = '⏸️';
-          playLandscapeBtn.style.display = 'flex';
-        });
-      } else {
-        errorMessage.textContent = 'HLS not supported in this browser.';
+      } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+        // Native HLS (Safari/iOS)
+        videoPlayer.src = url;
+        videoPlayer.play();
       }
+
+      playLandscapeBtn.style.display = 'flex';
     }
 
-    // Fetch channels and populate selector
     async function fetchChannels() {
       try {
         const response = await fetch(apiUrl);
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         const channels = data || [];
+
         channels.forEach(channel => {
           const option = document.createElement('option');
-          option.value = JSON.stringify({ url: channel.link, referer: channel.referer });
+          option.value = channel.link;
           option.textContent = channel.name;
           channelSelector.appendChild(option);
         });
 
-        // Check for URL parameter and preselect channel
+        // Preselect channel via URL param ?id=
         const urlParams = new URLSearchParams(window.location.search);
         const targetId = urlParams.get('id');
         if (targetId) {
           const channel = channels.find(item => item.id === targetId);
           if (channel) {
-            channelSelector.value = JSON.stringify({ url: channel.link, referer: channel.referer });
-            loadStream(channel.link, channel.referer);
+            channelSelector.value = channel.link;
+            loadStream(channel.link);
           } else {
             errorMessage.textContent = 'Stream not found for the provided ID';
           }
@@ -245,82 +143,24 @@
       }
     }
 
-    // Channel selection
     channelSelector.addEventListener('change', (e) => {
-      const selected = e.target.value;
-      if (selected) {
-        const { url, referer } = JSON.parse(selected);
-        loadStream(url, referer);
+      const url = e.target.value;
+      if (url) {
+        loadStream(url);
+        errorMessage.textContent = '';
       } else {
+        if (hls) hls.destroy();
+        videoPlayer.src = '';
         playLandscapeBtn.style.display = 'none';
-        video.pause();
-        playPauseBtn.textContent = '▶️';
         errorMessage.textContent = '';
       }
     });
 
-    // Play/Pause
-    playPauseBtn.addEventListener('click', () => {
-      if (video.paused) {
-        video.play();
-        playPauseBtn.textContent = '⏸️';
-      } else {
-        video.pause();
-        playPauseBtn.textContent = '▶️';
-      }
-    });
-
-    // Mute/Unmute
-    muteBtn.addEventListener('click', () => {
-      video.muted = !video.muted;
-      muteBtn.textContent = video.muted ? '🔇' : '🔊';
-    });
-
-    // Volume control
-    volumeSlider.addEventListener('input', () => {
-      video.volume = volumeSlider.value;
-      video.muted = (volumeSlider.value == 0);
-      muteBtn.textContent = video.muted ? '🔇' : '🔊';
-    });
-
-    // Progress bar update
-    video.addEventListener('timeupdate', () => {
-      if (!isNaN(video.duration)) {
-        const progressPercent = (video.currentTime / video.duration) * 100;
-        progressBar.style.width = `${progressPercent}%`;
-        currentTimeEl.textContent = formatTime(video.currentTime);
-        durationEl.textContent = formatTime(video.duration);
-      }
-    });
-
-    // Seek
-    progress.addEventListener('click', (e) => {
-      const pos = (e.offsetX / progress.offsetWidth) * video.duration;
-      video.currentTime = pos;
-    });
-
-    // Playback speed
-    speedSelect.addEventListener('change', () => {
-      video.playbackRate = parseFloat(speedSelect.value);
-    });
-
-    // Fullscreen
-    fullscreenBtn.addEventListener('click', () => {
-      if (!document.fullscreenElement) {
-        document.getElementById('player').requestFullscreen();
-      } else {
-        document.exitFullscreen();
-      }
-    });
-
-    // Play in Landscape and Fullscreen
     function playLandscape() {
       const player = document.getElementById('player');
       if (!document.fullscreenElement) {
         if (player.requestFullscreen) {
           player.requestFullscreen();
-        } else if (player.mozRequestFullScreen) {
-          player.mozRequestFullScreen();
         } else if (player.webkitRequestFullscreen) {
           player.webkitRequestFullscreen();
         } else if (player.msRequestFullscreen) {
@@ -328,31 +168,13 @@
         }
       }
       if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(function() {
+        screen.orientation.lock('landscape').catch(() => {
           console.log('Orientation lock failed.');
         });
       }
-      video.play();
-      video.muted = false;
-      muteBtn.textContent = video.muted ? '🔇' : '🔊';
     }
 
-    // Time format helper
-    function formatTime(time) {
-      if (isNaN(time)) return '00:00';
-      const mins = Math.floor(time / 60);
-      const secs = Math.floor(time % 60);
-      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    // Block popups and redirects
-    window.open = function() { return null; };
-    window.alert = function() {};
-
-    // Initialize
     fetchChannels();
-    video.controls = false;
-    video.muted = true;
   </script>
 </body>
 </html>
