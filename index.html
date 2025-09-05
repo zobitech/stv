@@ -20,15 +20,17 @@
     #player {
       width: 80%;
       max-width: 800px;
-      background-color: #000;
+      background-color: #fff;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       overflow: hidden;
+      position: relative;
     }
     #video {
       width: 100%;
       height: auto;
       background: black;
+      object-fit: contain;
     }
     .custom-controls {
       display: flex;
@@ -90,6 +92,33 @@
       font-size: 16px;
       border-radius: 4px;
       border: 1px solid #ccc;
+      background-color: #fff;
+    }
+    #error-message {
+      color: white;
+      text-align: center;
+      font-size: 18px;
+      margin-top: 20px;
+    }
+    #play-landscape-btn {
+      position: absolute;
+      bottom: 60px;
+      right: 20px;
+      background: #00e6ff;
+      color: #000;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 14px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    #play-landscape-btn:hover {
+      background: #00b3cc;
     }
   </style>
 </head>
@@ -97,9 +126,9 @@
   <select id="channel-selector">
     <option value="">Select a channel</option>
   </select>
-
   <div id="player">
     <video id="video"></video>
+    <button id="play-landscape-btn" onclick="playLandscape()">▶</button>
     <div class="custom-controls">
       <button id="play-pause">▶️</button>
       <span class="time" id="current-time">00:00</span>
@@ -120,6 +149,7 @@
       <button id="fullscreen">⛶</button>
     </div>
   </div>
+  <div id="error-message"></div>
 
   <script>
     const video = document.getElementById('video');
@@ -132,65 +162,100 @@
     const durationEl = document.getElementById('duration');
     const speedSelect = document.getElementById('speed');
     const fullscreenBtn = document.getElementById('fullscreen');
+    const playLandscapeBtn = document.getElementById('play-landscape-btn');
     const channelSelector = document.getElementById('channel-selector');
-
+    const errorMessage = document.getElementById('error-message');
     const apiUrl = 'https://raw.githubusercontent.com/abusaeeidx/CricHd-playlists-Auto-Update-permanent/main/api.json';
+    const proxyUrl = 'https://cors-anywhere.herokuapp.com/'; // Public CORS proxy for testing
 
     let hls = null;
 
-    // Fetch channels from API
-    async function fetchChannels() {
-      try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        const channels = Array.isArray(data) ? data : []; // API gives an array
-
-        channels.forEach(channel => {
-          const option = document.createElement('option');
-          option.value = channel.link; // use "link" field
-          option.textContent = channel.name;
-          channelSelector.appendChild(option);
-        });
-      } catch (error) {
-        console.error('Error fetching channels:', error);
-        alert('Failed to load channels. Please try again later.');
-      }
-    }
-
-    // Load HLS stream
-    function loadStream(url) {
+    // Load HLS stream with proxy and referer
+    function loadStream(url, referer) {
       if (hls) {
         hls.destroy();
         hls = null;
       }
-      video.src = "";
-
+      video.src = '';
+      const proxiedUrl = proxyUrl + url; // Prepend proxy URL
       if (Hls.isSupported()) {
-        hls = new Hls();
-        hls.loadSource(url);
+        hls = new Hls({
+          xhrSetup: function(xhr) {
+            xhr.setRequestHeader('Referer', referer);
+          }
+        });
+        hls.loadSource(proxiedUrl);
         hls.attachMedia(video);
         hls.on(Hls.Events.MANIFEST_PARSED, function () {
-          video.muted = true; 
-          video.play();
+          video.muted = true;
+          video.play().catch(() => {
+            errorMessage.textContent = 'Auto-play blocked. Click play to start.';
+          });
           playPauseBtn.textContent = '⏸️';
+          playLandscapeBtn.style.display = 'flex';
+        });
+        hls.on(Hls.Events.ERROR, function (event, data) {
+          if (data.fatal) {
+            errorMessage.textContent = 'Error loading stream. Try another channel or check proxy.';
+          }
         });
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = url;
+        video.src = proxiedUrl;
         video.addEventListener('loadedmetadata', function () {
           video.muted = true;
-          video.play();
+          video.play().catch(() => {
+            errorMessage.textContent = 'Auto-play blocked. Click play to start.';
+          });
           playPauseBtn.textContent = '⏸️';
+          playLandscapeBtn.style.display = 'flex';
         });
       } else {
-        alert("HLS not supported in this browser.");
+        errorMessage.textContent = 'HLS not supported in this browser.';
+      }
+    }
+
+    // Fetch channels and populate selector
+    async function fetchChannels() {
+      try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        const channels = data || [];
+        channels.forEach(channel => {
+          const option = document.createElement('option');
+          option.value = JSON.stringify({ url: channel.link, referer: channel.referer });
+          option.textContent = channel.name;
+          channelSelector.appendChild(option);
+        });
+
+        // Check for URL parameter and preselect channel
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetId = urlParams.get('id');
+        if (targetId) {
+          const channel = channels.find(item => item.id === targetId);
+          if (channel) {
+            channelSelector.value = JSON.stringify({ url: channel.link, referer: channel.referer });
+            loadStream(channel.link, channel.referer);
+          } else {
+            errorMessage.textContent = 'Stream not found for the provided ID';
+          }
+        }
+      } catch (error) {
+        errorMessage.textContent = `Error: ${error.message}`;
       }
     }
 
     // Channel selection
     channelSelector.addEventListener('change', (e) => {
-      const url = e.target.value;
-      if (url) {
-        loadStream(url);
+      const selected = e.target.value;
+      if (selected) {
+        const { url, referer } = JSON.parse(selected);
+        loadStream(url, referer);
+      } else {
+        playLandscapeBtn.style.display = 'none';
+        video.pause();
+        playPauseBtn.textContent = '▶️';
+        errorMessage.textContent = '';
       }
     });
 
@@ -248,6 +313,30 @@
       }
     });
 
+    // Play in Landscape and Fullscreen
+    function playLandscape() {
+      const player = document.getElementById('player');
+      if (!document.fullscreenElement) {
+        if (player.requestFullscreen) {
+          player.requestFullscreen();
+        } else if (player.mozRequestFullScreen) {
+          player.mozRequestFullScreen();
+        } else if (player.webkitRequestFullscreen) {
+          player.webkitRequestFullscreen();
+        } else if (player.msRequestFullscreen) {
+          player.msRequestFullscreen();
+        }
+      }
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(function() {
+          console.log('Orientation lock failed.');
+        });
+      }
+      video.play();
+      video.muted = false;
+      muteBtn.textContent = video.muted ? '🔇' : '🔊';
+    }
+
     // Time format helper
     function formatTime(time) {
       if (isNaN(time)) return '00:00';
@@ -256,6 +345,10 @@
       return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 
+    // Block popups and redirects
+    window.open = function() { return null; };
+    window.alert = function() {};
+
     // Initialize
     fetchChannels();
     video.controls = false;
@@ -263,4 +356,3 @@
   </script>
 </body>
 </html>
-
